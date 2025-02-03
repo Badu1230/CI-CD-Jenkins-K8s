@@ -3,7 +3,9 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'lbadu/heart-disease-notebook:latest'
-        KUBECONFIG = credentials('kubeconfig-file')  // Usando a credencial do kubeconfig
+        CA_CRT = credentials('ca-crt')  // Credencial do arquivo ca.crt
+        CLIENT_CRT = credentials('client-crt')  // Credencial do arquivo client.crt
+        CLIENT_KEY = credentials('client-key')  // Credencial do arquivo client.key
     }
 
     stages {
@@ -40,9 +42,15 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Autenticar no Kubernetes usando o kubeconfig
-                    sh 'kubectl apply -f deploymentsvc.yaml --kubeconfig=${KUBECONFIG}'
-                    sh 'kubectl apply -f service.yaml --kubeconfig=${KUBECONFIG}'
+                    // Autenticar no Kubernetes usando os certificados como credenciais
+                    withCredentials([
+                        file(credentialsId: 'ca-crt', variable: 'CA_CRT'),
+                        file(credentialsId: 'client-crt', variable: 'CLIENT_CRT'),
+                        file(credentialsId: 'client-key', variable: 'CLIENT_KEY')
+                    ]) {
+                        sh 'kubectl apply -f deploymentsvc.yaml --kubeconfig=${KUBECONFIG}'
+                        sh 'kubectl apply -f service.yaml --kubeconfig=${KUBECONFIG}'
+                    }
                 }
             }
         }
