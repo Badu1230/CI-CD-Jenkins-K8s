@@ -3,9 +3,6 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'lbadu/heart-disease-notebook:latest'
-        CA_CRT = credentials('ca-crt')  // Credencial do arquivo ca.crt
-        CLIENT_CRT = credentials('client-crt')  // Credencial do arquivo client.crt
-        CLIENT_KEY = credentials('client-key')  // Credencial do arquivo client.key
     }
 
     stages {
@@ -41,15 +38,40 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    // Autenticar no Kubernetes usando os certificados como credenciais
-                    withCredentials([
-                        file(credentialsId: 'ca-crt', variable: 'CA_CRT'),
-                        file(credentialsId: 'client-crt', variable: 'CLIENT_CRT'),
-                        file(credentialsId: 'client-key', variable: 'CLIENT_KEY')
-                    ]) {
-                        sh 'kubectl apply -f deploymentsvc.yaml --kubeconfig=${KUBECONFIG}'
-                        sh 'kubectl apply -f service.yaml --kubeconfig=${KUBECONFIG}'
+                withCredentials([
+                    file(credentialsId: 'ca-crt', variable: 'CA_CRT'),
+                    file(credentialsId: 'client-crt', variable: 'CLIENT_CRT'),
+                    file(credentialsId: 'client-key', variable: 'CLIENT_KEY')
+                ]) {
+                    script {
+                        // Escreva o arquivo kubeconfig para o diretório temporário
+                        sh """
+                        cat <<EOF > kubeconfig
+                        apiVersion: v1
+                        clusters:
+                        - cluster:
+                            certificate-authority: ${CA_CRT}
+                            server: https://127.0.0.1:32771
+                          name: minikube
+                        contexts:
+                        - context:
+                            cluster: minikube
+                            namespace: default
+                            user: minikube
+                          name: minikube
+                        current-context: minikube
+                        kind: Config
+                        preferences: {}
+                        users:
+                        - name: minikube
+                          user:
+                            client-certificate: ${CLIENT_CRT}
+                            client-key: ${CLIENT_KEY}
+                        EOF
+                        """
+                        
+                        sh 'kubectl apply -f deploymentsvc.yaml --kubeconfig=kubeconfig'
+                        sh 'kubectl apply -f service.yaml --kubeconfig=kubeconfig'
                     }
                 }
             }
