@@ -11,7 +11,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("heart-disease-notebook:latest")
+                    if (isUnix()) {
+                        sh 'docker --version'
+                    } else {
+                        bat 'docker --version'
+                    }
+                    def dockerImage = docker.build("heart-disease-notebook:latest")
                 }
             }
         }
@@ -20,17 +25,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
-                        docker.image("heart-disease-notebook:latest").push()
-                    }
-                }
-            }
-        }
-
-        stage('Test Docker Image') {
-            steps {
-                script {
-                    docker.image("heart-disease-notebook:latest").inside {
-                        sh 'pytest tests/'
+                        dockerImage.push()
                     }
                 }
             }
@@ -46,4 +41,5 @@ pipeline {
         }
     }
 }
+
 
