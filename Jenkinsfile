@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'Badu1230/heart-disease-notebook:latest'
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -16,7 +20,8 @@ pipeline {
                     } else {
                         bat 'docker --version'
                     }
-                    def dockerImage = docker.build("heart-disease-notebook:latest")
+                    def image = docker.build("${DOCKER_IMAGE}")
+                    env.DOCKER_IMAGE = image.id
                 }
             }
         }
@@ -25,7 +30,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
-                        dockerImage.push()
+                        docker.image(env.DOCKER_IMAGE).push()
                     }
                 }
             }
