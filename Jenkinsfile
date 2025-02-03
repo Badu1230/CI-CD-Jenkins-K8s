@@ -26,6 +26,16 @@ pipeline {
             }
         }
 
+        stage('Test Docker Image') {
+            steps {
+                script {
+                    docker.image("heart-disease-notebook:latest").inside {
+                        sh 'pytest tests/'
+                    }
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 script {
