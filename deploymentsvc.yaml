@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heart-disease-notebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heart-disease-notebook
+  template:
+    metadata:
+      labels:
+        app: heart-disease-notebook
+    spec:
+      containers:
+        - name: heart-disease-notebook
+          image: docker.io/heart-disease-notebook:latest
+          ports:
+            - containerPort: 8888
