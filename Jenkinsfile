@@ -1,22 +1,17 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = 'heart-disease-notebook:latest'
-        DOCKER_REGISTRY = 'docker.io'
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                git 'https://github.com/Badu1230/Heart_Disease_(Matplotlib_Analysis).ipynb.git'
+                git branch: 'main', url: 'https://github.com/Badu1230/CI-CD-Jenkins-K8s'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}")
+                    docker.build("heart-disease-notebook:latest")
                 }
             }
         }
@@ -24,8 +19,8 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', 'dockerhub-credentials') {
-                        docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}").push()
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        docker.image("heart-disease-notebook:latest").push()
                     }
                 }
             }
@@ -36,7 +31,6 @@ pipeline {
                 script {
                     sh "kubectl apply -f deploymentsvc.yaml"
                     sh "kubectl apply -f service.yaml"
-
                 }
             }
         }
