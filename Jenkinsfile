@@ -6,6 +6,12 @@ pipeline {
     }
 
     stages {
+        stage('Checkout SCM') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Badu1230/CI-CD-Jenkins-K8s'
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/Badu1230/CI-CD-Jenkins-K8s'
@@ -44,7 +50,7 @@ pipeline {
                     file(credentialsId: 'client-key', variable: 'CLIENT_KEY')
                 ]) {
                     script {
-                        // Escreva o arquivo kubeconfig para o diretório temporário
+                        // Écrire le fichier kubeconfig dans le répertoire temporaire
                         sh '''
                         cat > kubeconfig << EOF
 apiVersion: v1
@@ -75,6 +81,21 @@ EOF
                     }
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline terminée, avec ou sans succès!'
+        }
+        success {
+            echo 'Pipeline réussie!'
+        }
+        failure {
+            echo 'Pipeline échouée.'
+        }
+        cleanup {
+            deleteDir() // Clean up the workspace
         }
     }
 }
