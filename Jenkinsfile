@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Badu1230/CI-CD-Jenkins-K8s'
+                git branch: 'main', url: 'https://github.com/Badu1230/CI-CD-Jenkins-K8s'
             }
         }
 
@@ -36,4 +36,5 @@ pipeline {
         }
     }
 }
+
 
