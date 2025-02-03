@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'Badu1230/heart-disease-notebook:latest'
+        DOCKER_IMAGE = 'lbadu/heart-disease-notebook:latest'
     }
 
     stages {
