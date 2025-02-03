@@ -46,28 +46,28 @@ pipeline {
                     script {
                         // Escreva o arquivo kubeconfig para o diretório temporário
                         sh '''
-                        cat <<EOF > kubeconfig
-                        apiVersion: v1
-                        clusters:
-                        - cluster:
-                            certificate-authority: $CA_CRT
-                            server: https://127.0.0.1:32771
-                          name: minikube
-                        contexts:
-                        - context:
-                            cluster: minikube
-                            namespace: default
-                            user: minikube
-                          name: minikube
-                        current-context: minikube
-                        kind: Config
-                        preferences: {}
-                        users:
-                        - name: minikube
-                          user:
-                            client-certificate: $CLIENT_CRT
-                            client-key: $CLIENT_KEY
-                        EOF
+                        cat > kubeconfig << EOF
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: $CA_CRT
+    server: https://127.0.0.1:32771
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: $CLIENT_CRT
+    client-key: $CLIENT_KEY
+EOF
                         '''
                         
                         sh 'kubectl apply -f deploymentsvc.yaml --kubeconfig=kubeconfig'
